@@ -2,64 +2,64 @@
 
 ## Introduction
 
-This project is made as the Final Report for the course **"Lập trình mạng"** at **Vietnam Aviation Academy**.
+This project is created as the Final Report for the course **"Network Programming"** at **VAA**.
 
 ---
 
 ## About
 
-Ứng dụng chat realtime hỗ trợ kết bạn, nhắn tin cá nhân, nhóm, xác thực Google, giao diện hiện đại với Bootstrap.  
-Dự án sử dụng Node.js, Express, MongoDB, Socket.IO, Cloudinary, Bootstrap, Pug template.
+A real-time chat application supporting friend requests, personal and group messaging, Google authentication, and a modern interface with Bootstrap.  
+The project uses Node.js, Express, MongoDB, Socket.IO, Cloudinary, Bootstrap, and Pug template.
 
 ---
 
-## Technique
+## Technologies
 
 - **Node.js** & **Express** (Backend)
 - **MongoDB** & **Mongoose** (Database)
 - **Socket.IO** (Realtime communication)
-- **Cloudinary** (Upload ảnh/audio)
-- **Google OAuth2** (Đăng nhập Google)
+- **Cloudinary** (Image/audio upload)
+- **Google OAuth2** (Google login)
 - **Bootstrap 5**, **Pug template** (Frontend)
-- **SweetAlert2**, **jQuery**, các plugin UI khác
+- **SweetAlert2**, **jQuery**, other UI plugins
 
 ---
 
-## Feature
+## Features
 
 ### Account Management
-- Đăng ký, đăng nhập (hỗ trợ Google OAuth)
-- Đăng xuất
+- Register, login (supports Google OAuth)
+- Logout
 
 ### Friend Management
-- Gửi, hủy, chấp nhận, từ chối lời mời kết bạn
-- Danh sách bạn bè, người lạ, lời mời đã gửi/nhận
+- Send, cancel, accept, decline friend requests
+- Friend list, strangers, sent/received requests
 
 ### Chat
-- Chat realtime 1-1 và nhóm (gửi text, ảnh, audio)
-- Thông báo realtime qua Socket.IO
-- Trạng thái đang gõ, đã gửi, đã nhận
+- Real-time 1-1 and group chat (send text, images, audio)
+- Real-time notifications via Socket.IO
+- Typing, sent, and received status
 
 ### Room Management
-- Tạo phòng chat nhóm
+- Create group chat rooms
 
 ### UI/UX
-- Giao diện responsive, hiện đại với Bootstrap
-- Popup thông báo, xác nhận thao tác
+- Responsive, modern interface with Bootstrap
+- Popup notifications, action confirmations
 
 ---
 
 ## Contributors
 
-- Trần Kim Quang
-- Dương Quang Minh
-- Phạm Chí Bình
+- Tran Kim Quang (2331540197@vaa.edu.vn)
+- Duong Quang Minh (2331540103@vaa.edu.vn)
+- Pham Chi Binh (2331540096@vaa.edu.vn)
 
 ---
 
 ## Installation
 
-### This project requires below technologies to implement:
+### This project requires the following technologies:
 
 - Node.js >= 16.x
 - MongoDB
@@ -67,20 +67,20 @@ Dự án sử dụng Node.js, Express, MongoDB, Socket.IO, Cloudinary, Bootstrap
 ### Setup
 
 1. **Clone this repository**
-2. **Cài đặt dependencies**
+2. **Install dependencies**
     ```bash
     npm install
     ```
-3. **Chạy ứng dụng**
+3. **Run the application**
     ```bash
     npm run dev
     ```
-    hoặc build và chạy production:
+    or build and run in production:
     ```bash
     npm run build
     npm start
     ```
-4. **Truy cập**
+4. **Access**
     ```
     http://localhost:3000
     ```
@@ -89,9 +89,9 @@ Dự án sử dụng Node.js, Express, MongoDB, Socket.IO, Cloudinary, Bootstrap
 
 ## Optional
 
-- Cloudinary (upload ảnh/audio)
-- SweetAlert2 (popup thông báo)
-- Các plugin UI: Dropzone, Fancybox, Select2, FontAwesome, Swiper...
+- Cloudinary (image/audio upload)
+- SweetAlert2 (popup notifications)
+- UI plugins: Dropzone, Fancybox, Select2, FontAwesome, Swiper...
 
 ---
 
