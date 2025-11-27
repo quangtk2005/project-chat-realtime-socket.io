@@ -1,0 +1,113 @@
+doctype html
+// =============================
+// PHẦN KẾT NỐI FE VỚI BE (API)
+//
+// 1. Trang này là giao diện đăng nhập, sử dụng OAuth Google để xác thực.
+//    - Khi bấm nút Google, FE sẽ chuyển hướng tới link OAuth Google với các tham số client_id, redirect_uri, ...
+//    - Sau khi đăng nhập thành công, Google sẽ redirect về BE (theo redirect_uri), BE nhận mã code, xử lý xác thực, tạo session/token, rồi chuyển hướng về FE.
+//
+// 2. Các biến CLIENT_ID, REDIRECT_URI_GOOGLE_REGISTER_CALLBACK được truyền từ BE sang FE (render pug).
+//
+// 3. Nếu muốn xem chi tiết, hãy kiểm tra:
+//    - Controller: controller/client/account.controller.ts (xử lý logic đăng nhập, callback Google)
+//    - Route: routes/client/account.routes.ts (định nghĩa endpoint login, callback)
+//    - JS FE: public/client/js/script.js (nếu có xử lý bổ sung ở FE)
+//
+// 4. Dữ liệu truyền vào pug qua biến (CLIENT_ID, REDIRECT_URI_GOOGLE_REGISTER_CALLBACK) từ BE sang FE.
+// =============================
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0, user-scalable=0")
+    meta(name="description", content="Template Content")
+    meta(name="keywords", content="Template Keywords")
+    meta(name="author", content="Dreamguys - DreamsChat")
+    meta(name="twitter:card", content="summary_large_image")
+    meta(name="twitter:site", content="@dreamguystech")
+    meta(name="twitter:title", content="Template Content")
+    meta(name="twitter:description", content="Template Content")
+    meta(name="twitter:image", content="")
+    meta(name="twitter:image:alt", content="")
+    meta(property="og:url", content="Template Landing Page URL")
+    meta(property="og:title", content="Template Titlte")
+    meta(property="og:description", content="Template Content")
+    meta(property="og:image", content="")
+    meta(property="og:image:secure_url", content="")
+    meta(property="og:image:type", content="image/png")
+    meta(property="og:image:width", content="1200")
+    meta(property="og:image:height", content="600")
+    title DreamsChat
+    // Favicon
+    link(rel="icon", href="/client/assets/img/favicon.png")
+    // Bootstrap CSS
+    link(rel="stylesheet", href="/client/assets/css/bootstrap.min.css")
+    // Feathericon CSS
+    link(rel="stylesheet", href="/client/assets/css/feather.css")
+    // Fontawesome CSS
+    link(rel="stylesheet", href="/client/assets/plugins/fontawesome/css/fontawesome.min.css")
+    link(rel="stylesheet", href="/client/assets/plugins/fontawesome/css/all.min.css")
+    // TablerIcon CSS
+    link(rel="stylesheet", href="/client/assets/plugins/tabler-icons/tabler-icons.min.css")
+    // Style CSS
+    link(rel="stylesheet", href="/client/assets/css/style.css")
+    link(rel="stylesheet", href="/client/assets/css/style.css")
+  body
+    // Main Wrapper
+    div(class="main-wrapper d-block")
+      div(class="container-fuild")
+        div(class=" w-100 overflow-hidden position-relative flex-wrap d-block vh-100")
+          div(class="row")
+            div(class="col-lg-6 col-md-12 col-sm-12")
+              div(class="row justify-content-center align-items-center vh-100 overflow-auto flex-wrap login-bg1 ")
+                div(class="col-md-9 mx-auto p-4")
+                  form(action="index.html")
+                    div
+                      div(class=" mx-auto mb-5 text-center")
+                        img(src="/client/assets/img/full-logo.svg", class="img-fluid", alt="Logo")
+                      div(class="card")
+                        div(class="card-body")
+                          div(class=" mb-4")
+                            h2(class="mb-2") Xin chào thầy và các bạn!
+                            p(class="mb-0 fs-16") Đăng nhập để trải nghiệm sản phẩm của nhóm 07 chúng mình
+                          div(class="d-flex align-items-center justify-content-center flex-wrap")
+                            div(class="text-center me-2 flex-fill")
+                              // Biến CLIENT_ID và REDIRECT_URI_GOOGLE_REGISTER_CALLBACK được truyền từ BE sang FE khi render pug
+                              - let CLIENT_ID = "781549837220-ejg0ta0hiis1l0s4ii4nam5n3pfi48vc.apps.googleusercontent.com"
+                              // Khi bấm nút Google, FE sẽ chuyển hướng tới link OAuth Google, sau khi đăng nhập thành công Google sẽ redirect về BE (theo redirect_uri), BE nhận mã code, xử lý xác thực, tạo session/token, rồi chuyển hướng về FE
+                              a(href=`https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI_GOOGLE_REGISTER_CALLBACK}&response_type=code&scope=profile email`, class="fs-16 btn btn-white btn-shadow d-flex align-items-center justify-content-center")
+                                img(class="img-fluid me-3", src="/client/assets/img/icons/google.svg", alt="Facebook")
+                                | Google
+                            //- div(class="text-center flex-fill")
+                              a(href="javascript:void(0);", class="fs-16 btn btn-white btn-shadow d-flex align-items-center justify-content-center")
+                                img(class="img-fluid me-3", src="/client/assets/img/icons/facebook.svg", alt="Facebook")
+                                | Facebook
+            div(class="col-lg-6 p-0")
+              div(class="d-lg-flex align-items-center justify-content-center position-relative d-lg-block d-none flex-wrap vh-100 overflowy-auto login-bg2 ")
+                div(class="floating-bg")
+                  img(src="/client/assets/img/bg/circle-1.png", alt="Img")
+                  img(src="/client/assets/img/bg/circle-2.png", alt="Img")
+                  img(src="/client/assets/img/bg/emoji-01.svg", alt="Img")
+                  img(src="/client/assets/img/bg/emoji-02.svg", alt="Img")
+                  img(src="/client/assets/img/bg/emoji-03.svg", alt="Img")
+                  img(src="/client/assets/img/bg/emoji-04.svg", alt="Img")
+                  img(src="/client/assets/img/bg/right-arrow-01.svg", alt="Img")
+                  img(src="/client/assets/img/bg/right-arrow-02.svg", alt="Img")
+                div(class="floating-avatar ")
+                  span(class="avatar avatar-xl avatar-rounded border border-white")
+                    img(src="/client/assets/img/profiles/avatar-12.jpg", alt="img")
+                  span(class="avatar avatar-xl avatar-rounded border border-white")
+                    img(src="/client/assets/img/profiles/avatar-03.jpg", alt="img")
+                  span(class="avatar avatar-xl avatar-rounded border border-white")
+                    img(src="/client/assets/img/profiles/avatar-02.jpg", alt="img")
+                  span(class="avatar avatar-xl avatar-rounded border border-white")
+                    img(src="/client/assets/img/profiles/avatar-05.jpg", alt="img")
+                div(class="text-center")
+                  img(src="/client/assets/img/bg/login-bg-1.svg", class="login-img", alt="Img")
+    // /Main Wrapper
+    // jQuery
+    script(src="/client/assets/js/jquery-3.7.1.min.js")
+    // Bootstrap Core JS
+    script(src="/client/assets/js/bootstrap.bundle.min.js")
+    // Custom JS
+    script(src="/client/assets/js/script.js")

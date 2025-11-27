@@ -1,0 +1,69 @@
+extends ../../layouts/default.pug
+
+// =============================
+// PHẦN KẾT NỐI FE VỚI BE (API)
+//
+// 1. Trang này nhận danh sách bạn bè từ biến 'users' truyền từ BE (controller -> render pug).
+//    => Kết nối này thực hiện ở phía BE, thường là trong controller (account.controller.ts hoặc user.controller.ts), lấy dữ liệu từ DB rồi render ra pug.
+//
+// 2. Nút 'Nhắn tin' chuyển hướng sang trang chat với bạn bè, không cần gọi API.
+//
+// 3. Nút 'Xóa bạn' sẽ gọi hàm removeFriend FE, hàm này sẽ gửi request (AJAX/fetch) lên BE (API endpoint, ví dụ: /api/account/remove hoặc /api/user/remove-friend).
+//    => BE nhận request, xử lý logic (cập nhật DB), trả về kết quả cho FE để cập nhật giao diện.
+//
+// 4. Nếu muốn xem chi tiết, hãy kiểm tra:
+//    - Controller: controller/client/account.controller.ts hoặc user.controller.ts (xử lý logic lấy/xóa bạn bè)
+//    - Route: routes/client/account.routes.ts hoặc user.routes.ts (định nghĩa endpoint xóa bạn bè)
+//    - JS FE: public/client/js/page/friends.js (hoặc main.js) (gửi request lên BE khi bấm nút)
+//
+// 5. Dữ liệu user truyền vào pug qua biến 'users' (render từ BE sang FE).
+// =============================
+block js
+
+block main
+  div#middle(class="chat chat-messages show")
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          h4 Danh sách bạn bè
+          p Danh sách bạn bè của bạn
+        div(class="chat-options")
+          div(class="search-wrap")
+            form
+              div(class="input-group")
+                input(type="text", class="form-control", placeholder="Tìm kiếm bạn bè...")
+                span(class="input-group-text")
+                  i(class="ti ti-search")
+      
+      // Dưới đây là phần render danh sách bạn bè, dữ liệu lấy từ biến 'users' truyền từ BE sang FE
+      div(class="chat-body slimscroll")
+        div(class="users-list")
+          // Nếu có bạn bè (users.length > 0), lặp qua từng user để hiển thị
+          - if(users && users.length > 0)
+            each user in users
+              // Render từng user là bạn bè
+              div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
+                div(class="d-flex align-items-center")
+                  div(class="avatar me-3")
+                    // Ảnh đại diện bạn bè
+                    img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50")
+                  div(class="user-info")
+                    // Tên và email bạn bè
+                    h6(class="mb-1") #{user.name}
+                    p(class="mb-0 text-muted") #{user.email}
+                div(class="user-actions")
+                  // Nút 'Nhắn tin' chuyển hướng sang trang chat, không gọi API
+                  a(class="btn btn-primary btn-sm me-2" href=`/chat/${user.email}`)
+                    i(class="ti ti-message-circle me-1")
+                    | Nhắn tin
+                  // Nút 'Xóa bạn' sẽ gọi hàm removeFriend FE, hàm này sẽ gửi request lên BE (API /api/account/remove hoặc /api/user/remove-friend)
+                  button(class="btn btn-outline-danger btn-sm", onclick=`removeFriend(this, '${user._id}')`)
+                    i(class="ti ti-user-minus me-1")
+                    | Xóa bạn
+          // Nếu không có bạn bè nào thì hiển thị trạng thái rỗng
+          - else
+            div(class="empty-state text-center")
+              div(class="empty-icon")
+                i(class="ti ti-users")
+              h5 Không có bạn bè nào
+              p Chưa có bạn bè nào để hiển thị

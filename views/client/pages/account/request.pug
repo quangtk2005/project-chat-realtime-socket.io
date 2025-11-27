@@ -1,0 +1,62 @@
+// =============================
+// PHẦN KẾT NỐI FE VỚI BE (API)
+//
+// 1. Trang này là giao diện hiển thị các lời mời kết bạn đã gửi, danh sách user (users) được truyền từ BE sang FE khi render pug.
+//    - BE lấy danh sách lời mời đã gửi từ DB, truyền vào biến pug (users).
+//
+// 2. Nút "Hủy lời mời" sẽ gọi hàm cancelInvite FE, hàm này sẽ gửi request (AJAX/fetch) lên BE (API endpoint, ví dụ: /api/account/cancel-invite).
+//    - BE nhận request, xử lý hủy lời mời, cập nhật DB, trả về kết quả cho FE để cập nhật giao diện.
+//
+// 3. Nếu muốn xem chi tiết, hãy kiểm tra:
+//    - Controller: controller/client/account.controller.ts (xử lý logic lấy/hủy lời mời đã gửi)
+//    - Route: routes/client/account.routes.ts (định nghĩa endpoint hủy lời mời)
+//    - JS FE: public/client/js/page/request.js (hoặc main.js) (gửi request lên BE khi bấm nút hủy)
+//
+// 4. Dữ liệu truyền vào pug qua biến (users) từ BE sang FE.
+// =============================
+extends ../../layouts/default.pug
+
+block js
+
+block main
+  div#middle(class="chat chat-messages show")
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          h4 Lời mời đã gửi
+          p Lời mời kết bạn đã gửi cho người dùng khác
+        div(class="chat-options")
+          div(class="search-wrap")
+            form
+              div(class="input-group")
+                input(type="text", class="form-control", placeholder="Tìm kiếm người dùng...")
+                span(class="input-group-text")
+                  i(class="ti ti-search")
+      
+      div(class="chat-body slimscroll")
+        div(class="users-list")
+          // Lặp qua từng user đã gửi lời mời, dữ liệu users được BE truyền sang FE khi render pug
+          - if(users && users.length > 0)
+            each user in users
+              div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
+                div(class="d-flex align-items-center")
+                  div(class="avatar me-3")
+                    // Ảnh đại diện user, nếu lỗi sẽ dùng ảnh mặc định (dữ liệu này từ BE)
+                    img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50" onerror="this.src='/client/assets/img/profiles/avatar-01.jpg'")
+                  div(class="user-info")
+                    // Tên và email user (dữ liệu từ BE)
+                    h6(class="mb-1") #{user.name}
+                    p(class="mb-0 text-muted") #{user.email}
+                div(class="user-actions")
+                  // Hiển thị trạng thái đã gửi
+                  span(class="badge bg-warning me-2") Đã gửi
+                  // Nút "Hủy lời mời" sẽ gọi hàm cancelInvite FE, hàm này sẽ gửi request lên BE (API /api/account/cancel-invite)
+                  button(class="btn btn-outline-danger btn-sm", onclick=`cancelInvite(this, '${user._id}')`)
+                    i(class="ti ti-x me-1")
+                    | Hủy lời mời
+          - else
+            div(class="empty-state text-center")
+              div(class="empty-icon")
+                i(class="ti ti-users")
+              h5 Không có lời mời nào
+              p Chưa gửi lời mời kết bạn nào
