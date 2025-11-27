@@ -1,0 +1,216 @@
+// =============================
+// PHẦN KẾT NỐI FE VỚI BE (API)
+//
+// 1. Trang này là giao diện tạo phòng chat mới, danh sách bạn bè (friendsList) được truyền từ BE sang FE khi render pug.
+//    - BE lấy danh sách bạn bè từ DB, truyền vào biến pug (friendsList).
+//
+// 2. Khi người dùng chọn bạn và nhấn "Tạo Phòng Chat", FE sẽ gửi request (AJAX/fetch hoặc submit form) lên BE (API endpoint, ví dụ: /api/rooms/create).
+//    - BE nhận request, xử lý tạo phòng, lưu DB, trả về kết quả cho FE (thường là chuyển hướng sang phòng chat vừa tạo hoặc thông báo thành công/thất bại).
+//
+// 3. Nếu muốn xem chi tiết, hãy kiểm tra:
+//    - Controller: controller/client/room-chat.controller.ts (xử lý logic tạo phòng, lấy danh sách bạn bè)
+//    - Route: routes/client/room-chat.route.ts (định nghĩa endpoint tạo phòng)
+//    - JS FE: public/client/js/page/rooms-chat.js (hoặc main.js) (gửi request lên BE khi bấm nút tạo phòng)
+//
+// 4. Dữ liệu truyền vào pug qua biến (friendsList) từ BE sang FE.
+// =============================
+extends ../../layouts/default.pug
+
+block css
+  style.
+    .create-room-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      overflow-y: auto;
+      height: 100vh;
+    }
+    .room-form {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      display: block;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+    .friends-list {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .friend-item {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .friend-item:hover {
+      background: #f8f9fa;
+      border-color: #e1e5e9;
+    }
+    .friend-item.selected {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+    .friend-checkbox {
+      margin-right: 15px;
+      transform: scale(1.2);
+    }
+    .friend-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 15px;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .friend-info {
+      flex: 1;
+    }
+    .friend-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+    .friend-status {
+      font-size: 14px;
+      color: #666;
+      margin: 5px 0 0 0;
+    }
+    .btn-create {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      width: 100%;
+      margin-top: 20px;
+    }
+    .btn-create:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    .btn-create:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .selected-count {
+      background: #2196f3;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    .page-title {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+block main
+  .create-room-container
+    h1.page-title Tạo Phòng Chat Mới
+    
+    .room-form
+      form#createRoomForm
+        .form-group
+          label.form-label(for="roomName") Tên Phòng Chat
+          input.form-control#roomName(type="text", placeholder="Nhập tên phòng chat...", name="roomName")
+        
+        .form-group
+          label.form-label 
+            | Chọn Thành Viên
+            span.selected-count#selectedCount 0 người được chọn
+          .friends-list
+            // Lặp qua từng bạn bè, dữ liệu friendsList được BE truyền sang FE khi render pug
+            each friend in friendsList
+              .friend-item(data-user-id=friend.userId)
+                // Checkbox chọn bạn bè để thêm vào phòng, giá trị là userId (dữ liệu này sẽ gửi lên BE khi tạo phòng)
+                input.friend-checkbox(type="checkbox", name="selectedFriends", value=friend.userId)
+                // Avatar bạn bè, dữ liệu từ BE
+                img.friend-avatar(src=friend.avatar, alt=friend.fullName)
+                .friend-info
+                  // Tên bạn bè
+                  h3.friend-name #{friend.fullName}
+                  // Trạng thái (có thể lấy từ BE hoặc mặc định)
+                  p.friend-status Trực tuyến
+        
+        // Nút tạo phòng, khi submit sẽ gửi request (AJAX/fetch hoặc submit form) lên BE để tạo phòng mới
+        button.btn-create#createRoomBtn(type="submit", disabled) Tạo Phòng Chat
+
+block js
+  script.
+    // Xử lý chọn bạn, đếm số lượng, và gửi request tạo phòng (FE -> BE)
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('createRoomForm');
+      const checkboxes = document.querySelectorAll('.friend-checkbox');
+      const friendItems = document.querySelectorAll('.friend-item');
+      const selectedCount = document.getElementById('selectedCount');
+      const createBtn = document.getElementById('createRoomBtn');
+      
+      // Cập nhật số lượng bạn được chọn, nếu chưa chọn thì không cho tạo phòng
+      function updateSelectedCount() {
+        const selected = document.querySelectorAll('.friend-checkbox:checked').length;
+        selectedCount.textContent = selected + ' người được chọn';
+        createBtn.disabled = selected === 0;
+      }
+      
+      // Khi click vào item bạn bè sẽ toggle chọn, cập nhật giao diện và số lượng
+      friendItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+          if (e.target.type !== 'checkbox') {
+            const checkbox = this.querySelector('.friend-checkbox');
+            checkbox.checked = !checkbox.checked;
+            this.classList.toggle('selected', checkbox.checked);
+            updateSelectedCount();
+          }
+        });
+      });
+      
+      // Khi trực tiếp tick vào checkbox cũng cập nhật giao diện và số lượng
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const friendItem = this.closest('.friend-item');
+          friendItem.classList.toggle('selected', this.checked);
+          updateSelectedCount();
+        });
+      });
+      // TODO: Khi submit form (tạo phòng), FE sẽ gửi request (AJAX/fetch hoặc submit form) lên BE (API endpoint /api/rooms/create), BE xử lý tạo phòng và trả về kết quả
+    });
