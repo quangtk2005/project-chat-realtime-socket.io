@@ -1,0 +1,47 @@
+extends ../../layouts/default.pug
+
+block js
+  //- script(src="/client/js/page/accept.js")
+
+block main
+  div#middle(class="chat chat-messages show")
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          h4 Lời mời đã nhận
+          p Lời mời đã nhận từ người dùng khác
+        div(class="chat-options")
+          div(class="search-wrap")
+            form
+              div(class="input-group")
+                input(type="text", class="form-control", placeholder="Tìm kiếm người dùng...")
+                span(class="input-group-text")
+                  i(class="ti ti-search")
+      
+      div(class="chat-body slimscroll")
+        div(class="users-list")
+          - if(users && users.length > 0)
+            each user in users
+              div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
+                div(class="d-flex align-items-center")
+                  div(class="avatar me-3")
+                    img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50" onerror="this.src='/client/assets/img/profiles/avatar-01.jpg'")
+                  div(class="user-info")
+                    h6(class="mb-1") #{user.name}
+                    p(class="mb-0 text-muted") #{user.email}
+                div(class="user-actions")
+                  button(class="btn btn-primary btn-sm me-2", onclick=`acceptInvite(this, '${user._id}')`)
+                    i(class="ti ti-check me-1")
+                    | Chấp nhận
+                  a(class="btn btn-success btn-sm me-2 d-none" href=`/chat/${user.email}`)
+                    i(class="ti ti-message-circle me-1")
+                    | Nhắn tin
+                  button(class="btn btn-outline-danger btn-sm", onclick=`rejectInvite(this, '${user._id}')`)
+                    i(class="ti ti-x me-1")
+                    | Từ chối
+          - else
+            div(class="empty-state text-center")
+              div(class="empty-icon")
+                i(class="ti ti-users")
+              h5 Không có lời mời nào
+              p Chưa có lời mời kết bạn nào để hiển thị

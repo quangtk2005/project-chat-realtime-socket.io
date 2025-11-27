@@ -1,0 +1,41 @@
+extends ../../layouts/default.pug
+
+block js
+
+block main
+  div#middle(class="chat chat-messages show")
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          h4 Lời mời đã gửi
+          p Lời mời kết bạn đã gửi cho người dùng khác
+        div(class="chat-options")
+          div(class="search-wrap")
+            form
+              div(class="input-group")
+                input(type="text", class="form-control", placeholder="Tìm kiếm người dùng...")
+                span(class="input-group-text")
+                  i(class="ti ti-search")
+      
+      div(class="chat-body slimscroll")
+        div(class="users-list")
+          - if(users && users.length > 0)
+            each user in users
+              div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
+                div(class="d-flex align-items-center")
+                  div(class="avatar me-3")
+                    img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50" onerror="this.src='/client/assets/img/profiles/avatar-01.jpg'")
+                  div(class="user-info")
+                    h6(class="mb-1") #{user.name}
+                    p(class="mb-0 text-muted") #{user.email}
+                div(class="user-actions")
+                  span(class="badge bg-warning me-2") Đã gửi
+                  button(class="btn btn-outline-danger btn-sm", onclick=`cancelInvite(this, '${user._id}')`)
+                    i(class="ti ti-x me-1")
+                    | Hủy lời mời
+          - else
+            div(class="empty-state text-center")
+              div(class="empty-icon")
+                i(class="ti ti-users")
+              h5 Không có lời mời nào
+              p Chưa gửi lời mời kết bạn nào

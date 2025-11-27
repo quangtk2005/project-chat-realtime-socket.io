@@ -1,0 +1,43 @@
+extends ../../layouts/default.pug
+
+block js
+
+block main
+  div#middle(class="chat chat-messages show")
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          h4 Danh sách bạn bè
+          p Danh sách bạn bè của bạn
+        div(class="chat-options")
+          div(class="search-wrap")
+            form
+              div(class="input-group")
+                input(type="text", class="form-control", placeholder="Tìm kiếm bạn bè...")
+                span(class="input-group-text")
+                  i(class="ti ti-search")
+      
+      div(class="chat-body slimscroll")
+        div(class="users-list")
+          - if(users && users.length > 0)
+            each user in users
+              div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
+                div(class="d-flex align-items-center")
+                  div(class="avatar me-3")
+                    img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50")
+                  div(class="user-info")
+                    h6(class="mb-1") #{user.name}
+                    p(class="mb-0 text-muted") #{user.email}
+                div(class="user-actions")
+                  a(class="btn btn-primary btn-sm me-2" href=`/chat/${user.email}`)
+                    i(class="ti ti-message-circle me-1")
+                    | Nhắn tin
+                  button(class="btn btn-outline-danger btn-sm", onclick=`removeFriend(this, '${user._id}')`)
+                    i(class="ti ti-user-minus me-1")
+                    | Xóa bạn
+          - else
+            div(class="empty-state text-center")
+              div(class="empty-icon")
+                i(class="ti ti-users")
+              h5 Không có bạn bè nào
+              p Chưa có bạn bè nào để hiển thị

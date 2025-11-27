@@ -1,0 +1,38 @@
+extends ../../layouts/default.pug
+
+//- block main
+//-   h1 Trang chủ
+//-   a(href="/account/login") Đăng nhập
+//-   a(href="/account/register") Đăng ký
+//-   - let CLIENT_ID = "781549837220-ejg0ta0hiis1l0s4ii4nam5n3pfi48vc.apps.googleusercontent.com"
+//-   a(href=`https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI_GOOGLE_REGISTER_CALLBACK}&response_type=code&scope=profile email`)  Đăng ký bằng google
+//-   button(onclick="logout()") Đăng xuất
+//-   - if(USER)
+//-     div đã dn
+//-     div(class=``) 
+//-       div(class=`` id = "body-message")
+//-         - if(chats && chats.length > 0)
+//-           each chat in chats
+//-             div(class="message")
+//-               p #{chat.content} - #{chat.userId.name}
+//-         - else
+//-           div không có tin nhắn
+//-       form(action="", method="get" onsubmit="sendMessage(event)") 
+//-         input(type="text" id="message" placeholder="Nhập tin nhắn")
+//-         button() Gửi
+//-   - else
+//-     div chưa đn
+
+
+block main
+  div(class="welcome-content d-flex align-items-center justify-content-center")
+    div(class="welcome-info text-center")
+      div(class="welcome-box bg-white d-inline-flex align-items-center")
+        span(class="avatar avatar-md me-2")
+          img(src="/client/assets/img/profiles/avatar-16.jpg", alt="img", class="rounded-circle")
+        h6 Welcome! Nhóm 7 Lập trình mạng
+          img(src="/client/assets/img/icons/emoji-01.svg", alt="Image", class="ms-2")
+      p Choose a person or group to start chat with them.
+      a(href="javascript:void(0);", class="btn btn-primary", data-bs-toggle="modal", data-bs-target="#new-chat")
+        i(class="ti ti-location me-2")
+        | Invite Contacts

@@ -1,0 +1,390 @@
+extends ../../layouts/default.pug
+
+// =============================
+// PHẦN KẾT NỐI FE VỚI BE (API)
+//
+// 1. Trang này là giao diện chat realtime, dữ liệu phòng chat (rooms), user (USER), danh sách tin nhắn (chats) được truyền từ BE sang FE khi render pug.
+//    - BE lấy dữ liệu từ DB, truyền vào biến pug (rooms, USER, chats).
+//
+// 2. Gửi/nhận tin nhắn realtime sử dụng socket.io:
+//    - Khi gửi tin nhắn (ấn nút gửi hoặc submit form), FE sẽ emit event qua socket (thường là sendMessage hoặc tương tự) lên BE.
+//    - BE nhận event, xử lý, lưu DB, rồi emit lại cho các client liên quan để cập nhật giao diện.
+//    - Kết nối socket được khởi tạo ở file public/client/js/socket.io.js hoặc main.js.
+//
+// 3. Các nút gửi ảnh, audio, emoji... cũng sẽ gửi dữ liệu qua socket hoặc gọi API upload lên BE, BE trả về link để FE hiển thị.
+//
+// 4. Nếu muốn xem chi tiết, hãy kiểm tra:
+//    - Socket handler: sockets/client/chat.socket.ts (xử lý logic nhận/gửi tin nhắn, file, emoji...)
+//    - Controller: controller/client/chat.controller.ts (xử lý logic lấy tin nhắn, gửi tin nhắn qua API nếu có)
+//    - Route: routes/client/chat.routes.ts (định nghĩa endpoint lấy/gửi tin nhắn qua API nếu có)
+//    - JS FE: public/client/js/socket.io.js, main.js (kết nối socket, emit/receive event)
+//
+// 5. Dữ liệu truyền vào pug qua biến (rooms, USER, chats) từ BE sang FE.
+// =============================
+block js
+
+block main
+
+  // Dưới đây là phần render giao diện chat, dữ liệu phòng chat (rooms), user (USER) được truyền từ BE sang FE khi render pug
+  div#middle(class="chat chat-messages show" type-room=rooms.type_room)
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          div(class="d-xl-none")
+            a(class="text-muted chat-close me-2", href="chat.html#")
+              i(class="fas fa-arrow-left")
+          div(class="avatar avatar-lg online flex-shrink-0")
+            // Lấy thông tin user bạn chat (nếu là phòng friend), dữ liệu này đã được BE truyền vào biến rooms khi render pug
+            - const friendUser = rooms.type_room == "friend" ? rooms.users.find(it => USER._id.toString() != it.user_id._id.toString()) : null
+            - const avatarSrc = rooms.type_room == "friend" && friendUser && friendUser.user_id.picture ? friendUser.user_id.picture : "/client/assets/img/profiles/avatar-06.jpg"
+            img(src=avatarSrc, class="rounded-circle", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-06.jpg'")
+          div(class="ms-2 overflow-hidden")
+            // Hiển thị tên bạn chat hoặc tên phòng, dữ liệu từ BE
+            h6 #{rooms.type_room == "friend" ? (rooms.users.find(it => USER._id.toString() != it.user_id._id.toString()).user_id.name) : rooms.title}
+            span(class="last-seen") Online
+        // Các nút chức năng (call, info, ...), FE sẽ emit event hoặc gọi API khi thao tác, BE xử lý logic tương ứng
+        div(class="chat-options")
+          ul
+            li
+              a(href="javascript:void(0)", class="btn chat-search-btn", data-bs-toggle="tooltip", data-bs-placement="bottom", title="Search")
+                i(class="ti ti-search")
+            li(data-bs-toggle="tooltip", data-bs-placement="bottom", title="Video Call")
+              a(href="javascript:void(0)", class="btn", data-bs-toggle="modal", data-bs-target="#video-call")
+                i(class="ti ti-video")
+            li(data-bs-toggle="tooltip", data-bs-placement="bottom", title="Voice Call")
+              a(href="javascript:void(0)", class="btn", data-bs-toggle="modal", data-bs-target="#voice_call")
+                i(class="ti ti-phone")
+            li(title="Contact Info", data-bs-toggle="tooltip", data-bs-placement="bottom")
+              a(href="javascript:void(0)", class="btn", data-bs-toggle="offcanvas", data-bs-target="#contact-profile")
+                i(class="ti ti-info-circle")
+            li
+              a(class="btn no-bg", href="chat.html#", data-bs-toggle="dropdown")
+                i(class="ti ti-dots-vertical")
+              ul(class="dropdown-menu dropdown-menu-end p-3")
+                li
+                  a(href="index.html", class="dropdown-item")
+                    i(class="ti ti-x me-2")
+                    | Close Chat
+                li
+                  a(href="chat.html#", class="dropdown-item", data-bs-toggle="modal", data-bs-target="#mute-notification")
+                    i(class="ti ti-volume-off me-2")
+                    | Mute Notification
+                li
+                  a(href="chat.html#", class="dropdown-item", data-bs-toggle="modal", data-bs-target="#disappearing-messages")
+                    i(class="ti ti-clock-hour-4 me-2")
+                    | Disappearing Message
+                li
+                  a(href="chat.html#", class="dropdown-item", data-bs-toggle="modal", data-bs-target="#clear-chat")
+                    i(class="ti ti-clear-all me-2")
+                    | Clear Message
+                li
+                  a(href="chat.html#", class="dropdown-item", data-bs-toggle="modal", data-bs-target="#delete-chat")
+                    i(class="ti ti-trash me-2")
+                    | Delete Chat
+                li
+                  a(href="chat.html#", class="dropdown-item", data-bs-toggle="modal", data-bs-target="#report-user")
+                    i(class="ti ti-thumb-down me-2")
+                    | Report
+                li
+                  a(href="chat.html#", class="dropdown-item", data-bs-toggle="modal", data-bs-target="#block-user")
+                    i(class="ti ti-ban me-2")
+                    | Block
+        // Chat Search
+        div(class="chat-search search-wrap contact-search")
+          div
+            div(class="input-group")
+              input(type="text", class="form-control", placeholder="Search Contacts")
+              span(class="input-group-text")
+                i(class="ti ti-search")
+        // /Chat Search
+      // Dưới đây là phần render danh sách tin nhắn, dữ liệu chats được BE truyền sang FE khi render pug
+      div(class="chat-body chat-page-group slimscroll")
+        div(class="messages" my-id = USER._id)
+          // Lặp qua từng tin nhắn, mỗi tin nhắn là 1 object trong mảng chats (truyền từ BE)
+          - if(chats && chats.length > 0)
+            each chat in chats
+              // Nếu là tin nhắn của chính mình (USER), hiển thị bên phải
+              - if(USER._id.toString() == chat.userId._id.toString())
+                div(class="chats chats-right")
+                  // Các nút reply, forward, copy, ... sẽ emit event hoặc gọi API/socket lên BE nếu có thao tác
+                  div(class="chat-content")
+                    div(class="chat-profile-name text-end")
+                      h6 Bạn
+                        i(class="ti ti-circle-filled fs-7 mx-2")
+                        span(class="chat-time") #{moment(chat.createdAt).format('hh:mm A')}
+                        span(class="msg-read success")
+                          i(class="ti ti-checks")
+                    div(class="chat-info")
+                      div(class="chat-actions")
+                        a(class="#", href="chat.html#", data-bs-toggle="dropdown")
+                          i(class="ti ti-dots-vertical")
+                        ul(class="dropdown-menu dropdown-menu-end p-3")
+                          li
+                            a(class="dropdown-item reply-btn", href="chat.html#")
+                              i(class="ti ti-corner-up-left me-2")
+                              | Reply
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-pinned me-2")
+                              | Forward
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-file-export me-2")
+                              | Copy
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-heart me-2")
+                              | Mark as Favourite
+                          li
+                            a(class="dropdown-item", href="chat.html#", data-bs-toggle="modal", data-bs-target="#message-delete")
+                              i(class="ti ti-trash me-2")
+                              | Delete
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-check me-2")
+                              | Mark as Unread
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-box-align-right me-2")
+                              | Archeive Chat
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-pinned me-2")
+                              | Pin Chat
+                      
+                      // Nếu tin nhắn có ảnh, render ảnh (ảnh này có thể được upload lên BE, BE trả về link cho FE)
+                      - if(chat.images && chat.images.length > 0)
+                        div(class="message-content message-images", data-viewer-group="chat-images", style="display: flex; flex-wrap: wrap; gap: 10px; background: none;")
+                          each image in chat.images
+                            img(src=image, alt="Image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;")
+                      // Nếu tin nhắn có audio, render audio (file audio cũng upload lên BE, BE trả về link cho FE)
+                      - if(chat.audio)
+                        div(class="message-content" style="padding: 10px;")
+                          audio(controls style="width: 250px; height: 40px;")
+                            source(src=chat.audio type="audio/webm")
+                            source(src=chat.audio type="audio/mpeg")
+                      // Nội dung tin nhắn text
+                      - if(chat.content)
+                        div(class="message-content") #{chat.content}
+                      div(class="emoj-group")
+                            ul
+                              li(class="emoj-action")
+                                a(href="javascript:void(0);")
+                                  i(class="ti ti-mood-smile")
+                                div(class="emoj-group-list")
+                                  ul
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-02.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-05.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-06.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-07.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-08.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-03.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-10.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-09.svg", alt="Icon")
+                                    li(class="add-emoj")
+                                      a(href="javascript:void(0);")
+                                        i(class="ti ti-plus")
+                              li
+                                a(href="chat.html#", data-bs-toggle="modal", data-bs-target="#forward-message")
+                                  i(class="ti ti-arrow-forward-up")
+                  div(class="chat-avatar")
+                    // Avatar của chính mình, dữ liệu từ BE
+                    - const myAvatar = USER.picture || "/client/assets/img/profiles/avatar-17.jpg"
+                    img(src=myAvatar, class="rounded-circle dreams_chat", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-17.jpg'")
+              // Nếu là tin nhắn của người khác, hiển thị bên trái
+              - else
+
+                div(class="chats")
+                  div(class="chat-avatar")
+                    // Avatar của người gửi, dữ liệu từ BE
+                    - const otherUserAvatar = chat.userId.picture || "/client/assets/img/profiles/avatar-06.jpg"
+                    img(src=otherUserAvatar, class="rounded-circle", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-06.jpg'")
+                  div(class="chat-content")
+                    div(class="chat-profile-name")
+                      h6 #{chat.userId.name}
+                        i(class="ti ti-circle-filled fs-7 mx-2")
+                        span(class="chat-time") #{moment(chat.createdAt).format('hh:mm A')}
+                        span(class="msg-read success")
+                          i(class="ti ti-checks")
+                    div(class="chat-info")
+                      - if(chat.images && chat.images.length > 0)
+                        div(class="message-content message-images", data-viewer-group="chat-images", style="display: flex; flex-wrap: wrap; gap: 10px; background: none;")
+                          each image in chat.images
+                            img(src=image, alt="Image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;")
+                      - if(chat.audio)
+                        div(class="message-content" style="padding: 10px;")
+                          audio(controls style="width: 250px; height: 40px;")
+                            source(src=chat.audio type="audio/webm")
+                            source(src=chat.audio type="audio/mpeg")
+                      - if(chat.content)
+                        div(class="message-content") #{chat.content}
+                      div(class="emoj-group")
+                            ul
+                              li(class="emoj-action")
+                                a(href="javascript:void(0);")
+                                  i(class="ti ti-mood-smile")
+                                div(class="emoj-group-list")
+                                  ul
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-02.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-05.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-06.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-07.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-08.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-03.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-10.svg", alt="Icon")
+                                    li
+                                      a(href="javascript:void(0);")
+                                        img(src="/client/assets/img/icons/emonji-09.svg", alt="Icon")
+                                    li(class="add-emoj")
+                                      a(href="javascript:void(0);")
+                                        i(class="ti ti-plus")
+                              li
+                                a(href="chat.html#", data-bs-toggle="modal", data-bs-target="#forward-message")
+                                  i(class="ti ti-arrow-forward-up")
+                      div(class="chat-actions")
+                        a(class="#", href="chat.html#", data-bs-toggle="dropdown")
+                          i(class="ti ti-dots-vertical")
+                        ul(class="dropdown-menu dropdown-menu-end p-3")
+                          li
+                            a(class="dropdown-item reply-btn", href="chat.html#")
+                              i(class="ti ti-corner-up-left me-2")
+                              | Reply
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-pinned me-2")
+                              | Forward
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-file-export me-2")
+                              | Copy
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-heart me-2")
+                              | Mark as Favourite
+                          li
+                            a(class="dropdown-item", href="chat.html#", data-bs-toggle="modal", data-bs-target="#message-delete")
+                              i(class="ti ti-trash me-2")
+                              | Delete
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-check me-2")
+                              | Mark as Unread
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-box-align-right me-2")
+                              | Archeive Chat
+                          li
+                            a(class="dropdown-item", href="chat.html#")
+                              i(class="ti ti-pinned me-2")
+                              | Pin Chat
+    
+    // Phần nhập tin nhắn, khi submit sẽ gọi hàm FE (sendMessage), hàm này sẽ emit event qua socket lên BE để gửi tin nhắn
+    div(class="chat-footer")
+      //- form(class="footer-form" onsubmit="sendMessage(event)")
+      div(class="footer-form")
+        div#reply-div(class="chats reply-chat reply-div")
+          div(class="chat-avatar")
+            img(src="/client/assets/img/profiles/avatar-06.jpg", class="rounded-circle", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-06.jpg'")
+          div(class="chat-content")
+            div(class="chat-profile-name")
+              h6 Edward Lietz
+                i(class="ti ti-circle-filled fs-7 mx-2")
+                span(class="chat-time") 02:39 PM
+                span(class="msg-read success")
+                  i(class="ti ti-checks")
+            div(class="chat-info")
+              div(class="message-content")
+                div(class="message-reply reply-content")
+                  | Thank you for your support
+          a(href="chat.html#", class="close-replay")
+            i(class="ti ti-x")
+        div(class="custom-file-container " data-upload-id="upload-image-preview-main" style="width: 100%;")
+          //- input#upload-image-preview-main(type="file", accept="image/*", multiple, style="display: none;")
+        div(class="chat-footer-wrap")
+          div(class="form-item")
+            a(href="chat.html#", class="action-circle")
+              i(class="ti ti-microphone")
+          div(class="form-wrap")
+            input(type="text", class="form-control", placeholder="Type Your Message" id = "message")
+          
+          div(class="form-item ")
+            div(class=`position-relative`) 
+              a(href="javascript:void(0);", class="action-circle", onclick="toggleEmojiPicker(this)")
+                i(class="ti ti-mood-smile")
+              emoji-picker#emoji-picker(class=`emoj-picker position-absolute d-none`)
+            div(class="emoj-group-list-foot down-emoji-circle")
+              ul
+                li
+                  a(href="javascript:void(0);")
+                    img(src="/client/assets/img/icons/emonji-02.svg", alt="Icon")
+                li
+                  a(href="javascript:void(0);")
+                    img(src="/client/assets/img/icons/emonji-05.svg", alt="Icon")
+                li
+                  a(href="javascript:void(0);")
+                    img(src="/client/assets/img/icons/emonji-06.svg", alt="Icon")
+                li
+                  a(href="javascript:void(0);")
+                    img(src="/client/assets/img/icons/emonji-07.svg", alt="Icon")
+                li
+                  a(href="javascript:void(0);")
+                    img(src="/client/assets/img/icons/emonji-08.svg", alt="Icon")
+                li(class="add-emoj")
+                  a(href="javascript:void(0);")
+                    i(class="ti ti-plus")
+          div(class="form-item position-relative d-flex align-items-center justify-content-center ")
+            a(href=null, class="action-circle file-action position-absolute" onclick="openImage()")
+              i(class="ti ti-folder")
+            div(class="open-file position-relative", name="files" onclick="openImage()")
+          div(class="form-item")
+            a(href=null, data-bs-toggle="dropdown")
+              i(class="ti ti-dots-vertical")
+            div(class="dropdown-menu dropdown-menu-end p-3")
+              a(href="chat.html#", class="dropdown-item")
+                i(class="ti ti-camera-selfie me-2")
+                | Camera
+              a(href="chat.html#", class="dropdown-item")
+                i(class="ti ti-photo-up me-2")
+                | Gallery
+              a(href="chat.html#", class="dropdown-item")
+                i(class="ti ti-music me-2")
+                | Audio
+              a(href="chat.html#", class="dropdown-item")
+                i(class="ti ti-map-pin-share me-2")
+                | Location
+              a(href="chat.html#", class="dropdown-item")
+                i(class="ti ti-user-check me-2")
+                | Contact
+          div(class="form-btn")
+            button(class="btn btn-primary", type="submit" btn-send-message)
+              i(class="ti ti-send")

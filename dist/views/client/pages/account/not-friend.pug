@@ -1,0 +1,44 @@
+extends ../../layouts/default.pug
+
+block js
+  script(src="/client/js/page/not-friend.js")
+
+block main
+  div#middle(class="chat chat-messages show")
+    div
+      div(class="chat-header")
+        div(class="user-details")
+          h4 Danh sách người dùng
+          p Tìm kiếm và kết bạn với những người dùng khác
+        div(class="chat-options")
+          div(class="search-wrap")
+            form
+              div(class="input-group")
+                input(type="text", class="form-control", placeholder="Tìm kiếm người dùng...")
+                span(class="input-group-text")
+                  i(class="ti ti-search")
+      
+      div(class="chat-body slimscroll")
+        div(class="users-list")
+          - if(users && users.length > 0)
+            each user in users
+              div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
+                div(class="d-flex align-items-center")
+                  div(class="avatar me-3")
+                    img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50" onerror="this.src='/client/assets/img/profiles/avatar-01.jpg'")
+                  div(class="user-info")
+                    h6(class="mb-1") #{user.name}
+                    p(class="mb-0 text-muted") #{user.email}
+                div(class="user-actions")
+                  button(class="btn btn-primary btn-sm me-2", onclick=`inviteUser(this, '${user._id}')`)
+                    i(class="ti ti-user-plus me-1")
+                    | Mời kết bạn
+                  button(class="btn btn-outline-secondary btn-sm d-none", onclick=`cancelInvite(this, '${user._id}')`)
+                    i(class="ti ti-x me-1")
+                    | Hủy
+          - else
+            div(class="empty-state text-center")
+              div(class="empty-icon")
+                i(class="ti ti-users")
+              h5 Không có người dùng nào
+              p Chưa có người dùng nào để hiển thị
