@@ -19,5 +19,5 @@ router.use("/chat", middlewares.requireLogin, middlewares.roomFriendsAccess, cha
 router.use("", middlewares.requireLogin, middlewares.roomFriendsAccess, homeRoutes);
 
 router.use("/room-chat", middlewares.requireLogin, roomChatRoute);
-
+// comment
 export default router;
