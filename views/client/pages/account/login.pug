@@ -1,20 +1,4 @@
 doctype html
-// =============================
-// PHẦN KẾT NỐI FE VỚI BE (API)
-//
-// 1. Trang này là giao diện đăng nhập, sử dụng OAuth Google để xác thực.
-//    - Khi bấm nút Google, FE sẽ chuyển hướng tới link OAuth Google với các tham số client_id, redirect_uri, ...
-//    - Sau khi đăng nhập thành công, Google sẽ redirect về BE (theo redirect_uri), BE nhận mã code, xử lý xác thực, tạo session/token, rồi chuyển hướng về FE.
-//
-// 2. Các biến CLIENT_ID, REDIRECT_URI_GOOGLE_REGISTER_CALLBACK được truyền từ BE sang FE (render pug).
-//
-// 3. Nếu muốn xem chi tiết, hãy kiểm tra:
-//    - Controller: controller/client/account.controller.ts (xử lý logic đăng nhập, callback Google)
-//    - Route: routes/client/account.routes.ts (định nghĩa endpoint login, callback)
-//    - JS FE: public/client/js/script.js (nếu có xử lý bổ sung ở FE)
-//
-// 4. Dữ liệu truyền vào pug qua biến (CLIENT_ID, REDIRECT_URI_GOOGLE_REGISTER_CALLBACK) từ BE sang FE.
-// =============================
 html(lang="en")
   head
     meta(charset="utf-8")
@@ -72,9 +56,7 @@ html(lang="en")
                             p(class="mb-0 fs-16") Đăng nhập để trải nghiệm sản phẩm của nhóm 07 chúng mình
                           div(class="d-flex align-items-center justify-content-center flex-wrap")
                             div(class="text-center me-2 flex-fill")
-                              // Biến CLIENT_ID và REDIRECT_URI_GOOGLE_REGISTER_CALLBACK được truyền từ BE sang FE khi render pug
                               - let CLIENT_ID = "781549837220-ejg0ta0hiis1l0s4ii4nam5n3pfi48vc.apps.googleusercontent.com"
-                              // Khi bấm nút Google, FE sẽ chuyển hướng tới link OAuth Google, sau khi đăng nhập thành công Google sẽ redirect về BE (theo redirect_uri), BE nhận mã code, xử lý xác thực, tạo session/token, rồi chuyển hướng về FE
                               a(href=`https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI_GOOGLE_REGISTER_CALLBACK}&response_type=code&scope=profile email`, class="fs-16 btn btn-white btn-shadow d-flex align-items-center justify-content-center")
                                 img(class="img-fluid me-3", src="/client/assets/img/icons/google.svg", alt="Facebook")
                                 | Google

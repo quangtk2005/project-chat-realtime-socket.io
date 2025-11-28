@@ -1,24 +1,5 @@
 extends ../../layouts/default.pug
 
-// =============================
-// PHẦN KẾT NỐI FE VỚI BE (API)
-//
-// 1. Trang này sẽ nhận danh sách lời mời kết bạn từ biến 'users' được truyền từ BE (controller -> render pug).
-//    => Kết nối này thực hiện ở phía BE, thường là trong controller (account.controller.ts), lấy dữ liệu từ DB rồi render ra pug.
-//
-// 2. Các nút 'Chấp nhận', 'Từ chối' sẽ gọi hàm acceptInvite(this, userId) và rejectInvite(this, userId).
-//    => Hai hàm này thường được định nghĩa trong file JS FE (ví dụ: /client/js/page/accept.js hoặc main.js).
-//    => Khi click, FE sẽ gửi request (AJAX/fetch) lên BE (API endpoint, ví dụ: /api/account/accept hoặc /api/account/reject).
-//    => BE nhận request, xử lý logic (cập nhật DB), trả về kết quả cho FE để cập nhật giao diện.
-//
-// 3. Nếu muốn xem chi tiết, hãy kiểm tra:
-//    - Controller: controller/client/account.controller.ts (xử lý logic nhận lời mời, chấp nhận, từ chối)
-//    - Route: routes/client/account.routes.ts (định nghĩa endpoint nhận/chấp nhận/từ chối lời mời)
-//    - JS FE: public/client/js/page/accept.js (hoặc main.js) (gửi request lên BE khi bấm nút)
-//
-// 4. Dữ liệu user truyền vào pug qua biến 'users' (render từ BE sang FE).
-// Mỗi user có các thuộc tính như: _id, name, email, picture (ảnh đại diện).
-// =============================
 block js
   //- script(src="/client/js/page/accept.js")
 
@@ -37,36 +18,27 @@ block main
                 span(class="input-group-text")
                   i(class="ti ti-search")
       
-      // Dưới đây là phần render danh sách lời mời kết bạn, dữ liệu lấy từ biến 'users' truyền từ BE sang FE
       div(class="chat-body slimscroll")
         div(class="users-list")
-          // Nếu có lời mời kết bạn (users.length > 0), lặp qua từng user để hiển thị
           - if(users && users.length > 0)
             each user in users
-              // Render từng user được mời kết bạn
               div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
                 div(class="d-flex align-items-center")
                   div(class="avatar me-3")
-                    // Ảnh đại diện, nếu lỗi sẽ dùng ảnh mặc định
                     img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50" onerror="this.src='/client/assets/img/profiles/avatar-01.jpg'")
                   div(class="user-info")
-                    // Tên và email user
                     h6(class="mb-1") #{user.name}
                     p(class="mb-0 text-muted") #{user.email}
                 div(class="user-actions")
-                  // Nút 'Chấp nhận' sẽ gọi hàm acceptInvite FE, hàm này sẽ gửi request lên BE (API /api/account/accept)
                   button(class="btn btn-primary btn-sm me-2", onclick=`acceptInvite(this, '${user._id}')`)
                     i(class="ti ti-check me-1")
                     | Chấp nhận
-                  // Nút 'Nhắn tin' chỉ hiện khi đã chấp nhận, mặc định ẩn (d-none)
                   a(class="btn btn-success btn-sm me-2 d-none" href=`/chat/${user.email}`)
                     i(class="ti ti-message-circle me-1")
                     | Nhắn tin
-                  // Nút 'Từ chối' sẽ gọi hàm rejectInvite FE, hàm này sẽ gửi request lên BE (API /api/account/reject)
                   button(class="btn btn-outline-danger btn-sm", onclick=`rejectInvite(this, '${user._id}')`)
                     i(class="ti ti-x me-1")
                     | Từ chối
-          // Nếu không có lời mời nào thì hiển thị trạng thái rỗng
           - else
             div(class="empty-state text-center")
               div(class="empty-icon")

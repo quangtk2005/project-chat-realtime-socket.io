@@ -1,24 +1,5 @@
 extends ../../layouts/default.pug
 
-// =============================
-// PHẦN KẾT NỐI FE VỚI BE (API)
-//
-// 1. Trang này nhận danh sách người dùng chưa kết bạn từ biến 'users' truyền từ BE (controller -> render pug).
-//    => Kết nối này thực hiện ở phía BE, thường là trong controller (user.controller.ts hoặc account.controller.ts), lấy dữ liệu từ DB rồi render ra pug.
-//
-// 2. Nút 'Mời kết bạn' sẽ gọi hàm inviteUser FE, hàm này sẽ gửi request (AJAX/fetch) lên BE (API endpoint, ví dụ: /api/account/invite hoặc /api/user/invite).
-//    => BE nhận request, xử lý logic (tạo lời mời, cập nhật DB), trả về kết quả cho FE để cập nhật giao diện.
-//
-// 3. Nút 'Hủy' sẽ gọi hàm cancelInvite FE, hàm này sẽ gửi request lên BE (API endpoint, ví dụ: /api/account/cancel-invite).
-//    => BE nhận request, xử lý logic (hủy lời mời, cập nhật DB), trả về kết quả cho FE để cập nhật giao diện.
-//
-// 4. Nếu muốn xem chi tiết, hãy kiểm tra:
-//    - Controller: controller/client/user.controller.ts hoặc account.controller.ts (xử lý logic lấy danh sách, mời, hủy)
-//    - Route: routes/client/user.routes.ts hoặc account.routes.ts (định nghĩa endpoint mời/hủy kết bạn)
-//    - JS FE: public/client/js/page/not-friend.js (gửi request lên BE khi bấm nút)
-//
-// 5. Dữ liệu user truyền vào pug qua biến 'users' (render từ BE sang FE).
-// =============================
 block js
   script(src="/client/js/page/not-friend.js")
 
@@ -37,32 +18,24 @@ block main
                 span(class="input-group-text")
                   i(class="ti ti-search")
       
-      // Dưới đây là phần render danh sách người dùng chưa kết bạn, dữ liệu lấy từ biến 'users' truyền từ BE sang FE
       div(class="chat-body slimscroll")
         div(class="users-list")
-          // Nếu có người dùng (users.length > 0), lặp qua từng user để hiển thị
           - if(users && users.length > 0)
             each user in users
-              // Render từng user chưa kết bạn
               div(class="user-item d-flex align-items-center justify-content-between p-3 border-bottom")
                 div(class="d-flex align-items-center")
                   div(class="avatar me-3")
-                    // Ảnh đại diện user, nếu lỗi sẽ dùng ảnh mặc định
                     img(src=user.picture, alt=user.name, class="rounded-circle", width="50", height="50" onerror="this.src='/client/assets/img/profiles/avatar-01.jpg'")
                   div(class="user-info")
-                    // Tên và email user
                     h6(class="mb-1") #{user.name}
                     p(class="mb-0 text-muted") #{user.email}
                 div(class="user-actions")
-                  // Nút 'Mời kết bạn' sẽ gọi hàm inviteUser FE, hàm này sẽ gửi request lên BE (API /api/account/invite hoặc /api/user/invite)
                   button(class="btn btn-primary btn-sm me-2", onclick=`inviteUser(this, '${user._id}')`)
                     i(class="ti ti-user-plus me-1")
                     | Mời kết bạn
-                  // Nút 'Hủy' sẽ gọi hàm cancelInvite FE, hàm này sẽ gửi request lên BE (API /api/account/cancel-invite)
                   button(class="btn btn-outline-secondary btn-sm d-none", onclick=`cancelInvite(this, '${user._id}')`)
                     i(class="ti ti-x me-1")
                     | Hủy
-          // Nếu không có người dùng nào thì hiển thị trạng thái rỗng
           - else
             div(class="empty-state text-center")
               div(class="empty-icon")

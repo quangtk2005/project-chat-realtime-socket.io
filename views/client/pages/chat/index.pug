@@ -1,31 +1,9 @@
 extends ../../layouts/default.pug
 
-// =============================
-// PHẦN KẾT NỐI FE VỚI BE (API)
-//
-// 1. Trang này là giao diện chat realtime, dữ liệu phòng chat (rooms), user (USER), danh sách tin nhắn (chats) được truyền từ BE sang FE khi render pug.
-//    - BE lấy dữ liệu từ DB, truyền vào biến pug (rooms, USER, chats).
-//
-// 2. Gửi/nhận tin nhắn realtime sử dụng socket.io:
-//    - Khi gửi tin nhắn (ấn nút gửi hoặc submit form), FE sẽ emit event qua socket (thường là sendMessage hoặc tương tự) lên BE.
-//    - BE nhận event, xử lý, lưu DB, rồi emit lại cho các client liên quan để cập nhật giao diện.
-//    - Kết nối socket được khởi tạo ở file public/client/js/socket.io.js hoặc main.js.
-//
-// 3. Các nút gửi ảnh, audio, emoji... cũng sẽ gửi dữ liệu qua socket hoặc gọi API upload lên BE, BE trả về link để FE hiển thị.
-//
-// 4. Nếu muốn xem chi tiết, hãy kiểm tra:
-//    - Socket handler: sockets/client/chat.socket.ts (xử lý logic nhận/gửi tin nhắn, file, emoji...)
-//    - Controller: controller/client/chat.controller.ts (xử lý logic lấy tin nhắn, gửi tin nhắn qua API nếu có)
-//    - Route: routes/client/chat.routes.ts (định nghĩa endpoint lấy/gửi tin nhắn qua API nếu có)
-//    - JS FE: public/client/js/socket.io.js, main.js (kết nối socket, emit/receive event)
-//
-// 5. Dữ liệu truyền vào pug qua biến (rooms, USER, chats) từ BE sang FE.
-// =============================
 block js
 
 block main
 
-  // Dưới đây là phần render giao diện chat, dữ liệu phòng chat (rooms), user (USER) được truyền từ BE sang FE khi render pug
   div#middle(class="chat chat-messages show" type-room=rooms.type_room)
     div
       div(class="chat-header")
@@ -34,15 +12,12 @@ block main
             a(class="text-muted chat-close me-2", href="chat.html#")
               i(class="fas fa-arrow-left")
           div(class="avatar avatar-lg online flex-shrink-0")
-            // Lấy thông tin user bạn chat (nếu là phòng friend), dữ liệu này đã được BE truyền vào biến rooms khi render pug
             - const friendUser = rooms.type_room == "friend" ? rooms.users.find(it => USER._id.toString() != it.user_id._id.toString()) : null
             - const avatarSrc = rooms.type_room == "friend" && friendUser && friendUser.user_id.picture ? friendUser.user_id.picture : "/client/assets/img/profiles/avatar-06.jpg"
             img(src=avatarSrc, class="rounded-circle", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-06.jpg'")
           div(class="ms-2 overflow-hidden")
-            // Hiển thị tên bạn chat hoặc tên phòng, dữ liệu từ BE
             h6 #{rooms.type_room == "friend" ? (rooms.users.find(it => USER._id.toString() != it.user_id._id.toString()).user_id.name) : rooms.title}
             span(class="last-seen") Online
-        // Các nút chức năng (call, info, ...), FE sẽ emit event hoặc gọi API khi thao tác, BE xử lý logic tương ứng
         div(class="chat-options")
           ul
             li
@@ -97,16 +72,12 @@ block main
               span(class="input-group-text")
                 i(class="ti ti-search")
         // /Chat Search
-      // Dưới đây là phần render danh sách tin nhắn, dữ liệu chats được BE truyền sang FE khi render pug
       div(class="chat-body chat-page-group slimscroll")
         div(class="messages" my-id = USER._id)
-          // Lặp qua từng tin nhắn, mỗi tin nhắn là 1 object trong mảng chats (truyền từ BE)
           - if(chats && chats.length > 0)
             each chat in chats
-              // Nếu là tin nhắn của chính mình (USER), hiển thị bên phải
               - if(USER._id.toString() == chat.userId._id.toString())
                 div(class="chats chats-right")
-                  // Các nút reply, forward, copy, ... sẽ emit event hoặc gọi API/socket lên BE nếu có thao tác
                   div(class="chat-content")
                     div(class="chat-profile-name text-end")
                       h6 Bạn
@@ -152,18 +123,15 @@ block main
                               i(class="ti ti-pinned me-2")
                               | Pin Chat
                       
-                      // Nếu tin nhắn có ảnh, render ảnh (ảnh này có thể được upload lên BE, BE trả về link cho FE)
                       - if(chat.images && chat.images.length > 0)
                         div(class="message-content message-images", data-viewer-group="chat-images", style="display: flex; flex-wrap: wrap; gap: 10px; background: none;")
                           each image in chat.images
                             img(src=image, alt="Image" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px;")
-                      // Nếu tin nhắn có audio, render audio (file audio cũng upload lên BE, BE trả về link cho FE)
                       - if(chat.audio)
                         div(class="message-content" style="padding: 10px;")
                           audio(controls style="width: 250px; height: 40px;")
                             source(src=chat.audio type="audio/webm")
                             source(src=chat.audio type="audio/mpeg")
-                      // Nội dung tin nhắn text
                       - if(chat.content)
                         div(class="message-content") #{chat.content}
                       div(class="emoj-group")
@@ -204,15 +172,12 @@ block main
                                 a(href="chat.html#", data-bs-toggle="modal", data-bs-target="#forward-message")
                                   i(class="ti ti-arrow-forward-up")
                   div(class="chat-avatar")
-                    // Avatar của chính mình, dữ liệu từ BE
                     - const myAvatar = USER.picture || "/client/assets/img/profiles/avatar-17.jpg"
                     img(src=myAvatar, class="rounded-circle dreams_chat", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-17.jpg'")
-              // Nếu là tin nhắn của người khác, hiển thị bên trái
               - else
 
                 div(class="chats")
                   div(class="chat-avatar")
-                    // Avatar của người gửi, dữ liệu từ BE
                     - const otherUserAvatar = chat.userId.picture || "/client/assets/img/profiles/avatar-06.jpg"
                     img(src=otherUserAvatar, class="rounded-circle", alt="image", onerror="this.src='/client/assets/img/profiles/avatar-06.jpg'")
                   div(class="chat-content")
@@ -308,7 +273,6 @@ block main
                               i(class="ti ti-pinned me-2")
                               | Pin Chat
     
-    // Phần nhập tin nhắn, khi submit sẽ gọi hàm FE (sendMessage), hàm này sẽ emit event qua socket lên BE để gửi tin nhắn
     div(class="chat-footer")
       //- form(class="footer-form" onsubmit="sendMessage(event)")
       div(class="footer-form")

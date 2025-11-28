@@ -32,20 +32,20 @@ global._io = io;
 registerChatSocketHandlers();
 
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://apis.google.com"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https://api.cloudinary.com"],
-      fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-      frameSrc: ["'self'"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-}));
+// app.use(helmet({
+//   contentSecurityPolicy: {
+//     directives: {
+//       defaultSrc: ["'self'"],
+//       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+//       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://apis.google.com"],
+//       imgSrc: ["'self'", "data:", "https:", "http:"],
+//       connectSrc: ["'self'", "https://api.cloudinary.com", "https://cdn.jsdelivr.net"],
+//       fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+//       frameSrc: ["'self'"],
+//     },
+//   },
+//   crossOriginEmbedderPolicy: false,
+// }));
 
 app.use(cookieParser())
 app.set("view engine", "pug");
@@ -55,24 +55,24 @@ app.use(express.static(`${__dirname}/public`));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(async (req, res, next) => {
-  try {
-    const decision = await arcjetProtect(req, { requested: 1 });
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        return res.status(429).json({ error: "Quá nhiều yêu cầu" });
-      }
-      if (decision.reason.isBot()) {
-        return res.status(403).json({ error: "Bot được phát hiện" });
-      }
-      return res.status(403).json({ error: "Yêu cầu bị từ chối" });
-    }
-    next();
-  } catch (error) {
-    console.error("Lỗi Arcjet bảo vệ:", error);
-    next();
-  }
-});
+// app.use(async (req, res, next) => {
+//   try {
+//     const decision = await arcjetProtect(req, { requested: 1 });
+//     if (decision.isDenied()) {
+//       if (decision.reason.isRateLimit()) {
+//         return res.status(429).json({ error: "Quá nhiều yêu cầu" });
+//       }
+//       if (decision.reason.isBot()) {
+//         return res.status(403).json({ error: "Bot được phát hiện" });
+//       }
+//       return res.status(403).json({ error: "Yêu cầu bị từ chối" });
+//     }
+//     next();
+//   } catch (error) {
+//     console.error("Lỗi Arcjet bảo vệ:", error);
+//     next();
+//   }
+// });
 
 app.use(indexRoutes);
 
